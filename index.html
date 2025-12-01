@@ -350,24 +350,162 @@ async function viewFull(id) {
   }
   const w = window.open("", "_blank");
   w.document.write(`
-    <html>
+    <!DOCTYPE html>
+    <html lang="cs">
     <head>
+      <meta charset="utf-8">
       <title>Záznam - ${entry.timeText}</title>
-      <meta name="viewport" content="width=device-width,initial-scale=1.0">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
       <style>
-        body{font-family:system-ui;padding:20px;max-width:800px;margin:0 auto}
-        img{max-width:100%;height:auto;display:block;margin:20px 0;border-radius:8px}
-        p{margin:12px 0;line-height:1.6}
-        strong{color:#1976d2}
+        * { box-sizing: border-box; }
+        html { font-size: 16px; }
+        body {
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+          margin: 0;
+          padding: 1rem;
+          background: #f5f7fa;
+          color: #111;
+        }
+        .container {
+          max-width: 900px;
+          margin: 0 auto;
+          background: #fff;
+          border-radius: 12px;
+          padding: 1.5rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .header {
+          margin-bottom: 1.5rem;
+          border-bottom: 2px solid #e0e0e0;
+          padding-bottom: 1rem;
+        }
+        .header h1 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1.5rem;
+          color: #1976d2;
+        }
+        .header .meta {
+          font-size: 0.95rem;
+          color: #666;
+          line-height: 1.6;
+        }
+        .photo-container {
+          margin: 1.5rem 0;
+          text-align: center;
+        }
+        img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          border: 1px solid #e0e0e0;
+          display: block;
+        }
+        .content {
+          margin-top: 1.5rem;
+        }
+        .field {
+          margin-bottom: 1.25rem;
+          padding: 1rem;
+          background: #f9f9f9;
+          border-left: 4px solid #1976d2;
+          border-radius: 4px;
+        }
+        .field strong {
+          color: #1976d2;
+          font-weight: 600;
+          display: block;
+          margin-bottom: 0.5rem;
+          font-size: 1.05rem;
+        }
+        .field-value {
+          color: #333;
+          font-size: 1rem;
+          line-height: 1.6;
+          word-break: break-word;
+          white-space: pre-wrap;
+        }
+        .empty-field {
+          color: #999;
+          font-style: italic;
+        }
+        footer {
+          margin-top: 2rem;
+          padding-top: 1rem;
+          border-top: 1px solid #e0e0e0;
+          text-align: center;
+          font-size: 0.85rem;
+          color: #666;
+        }
+        /* Tablet optimalizace */
+        @media (max-width: 768px) {
+          html { font-size: 14px; }
+          body { padding: 0.75rem; }
+          .container { padding: 1rem; }
+          .header h1 { font-size: 1.3rem; }
+          img { border-radius: 6px; }
+          .field { padding: 0.875rem; margin-bottom: 1rem; }
+        }
+        /* Mobilní optimalizace */
+        @media (max-width: 480px) {
+          html { font-size: 13px; }
+          body { padding: 0.5rem; }
+          .container { padding: 0.875rem; border-radius: 8px; }
+          .header h1 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+          .header .meta { font-size: 0.9rem; }
+          .photo-container { margin: 1rem 0; }
+          img { border-radius: 6px; max-height: 70vh; width: auto; }
+          .field { padding: 0.75rem; margin-bottom: 0.875rem; border-left-width: 3px; }
+          .field strong { font-size: 1rem; }
+          .field-value { font-size: 0.95rem; }
+          footer { font-size: 0.8rem; margin-top: 1.5rem; }
+        }
       </style>
     </head>
     <body>
-      <img src="${entry.photo}">
-      <p><strong>Čas:</strong> ${entry.timeText}</p>
-      <p><strong>Poloha:</strong> ${entry.coords ? entry.coords.lat + ", " + entry.coords.lon : "bez polohy"}</p>
-      ${entry.longNote ? `<p><strong>Podélné měření:</strong> ${escapeHtml(entry.longNote)}</p>` : ''}
-      ${entry.crossNote ? `<p><strong>Příčné měření:</strong> ${escapeHtml(entry.crossNote)}</p>` : ''}
-      ${entry.note ? `<p><strong>Poznámka:</strong> ${escapeHtml(entry.note)}</p>` : ''}
+      <div class="container">
+        <div class="header">
+          <h1>Záznam z kontroly kvality</h1>
+          <div class="meta">
+            <strong>📅 Čas:</strong> ${entry.timeText}<br>
+            <strong>📍 Poloha:</strong> ${entry.coords ? entry.coords.lat + ", " + entry.coords.lon : "bez polohy"}
+          </div>
+        </div>
+        
+        <div class="photo-container">
+          <img src="${entry.photo}" alt="Fotografie záznamu">
+        </div>
+        
+        <div class="content">
+          ${entry.longNote ? `
+            <div class="field">
+              <strong>📏 Podélné měření</strong>
+              <div class="field-value">${escapeHtml(entry.longNote)}</div>
+            </div>
+          ` : ''}
+          
+          ${entry.crossNote ? `
+            <div class="field">
+              <strong>↔️ Příčné měření</strong>
+              <div class="field-value">${escapeHtml(entry.crossNote)}</div>
+            </div>
+          ` : ''}
+          
+          ${entry.note ? `
+            <div class="field">
+              <strong>📝 Poznámka</strong>
+              <div class="field-value">${escapeHtml(entry.note)}</div>
+            </div>
+          ` : ''}
+          
+          ${!entry.longNote && !entry.crossNote && !entry.note ? `
+            <div class="field">
+              <div class="field-value empty-field">Bez dalších informací</div>
+            </div>
+          ` : ''}
+        </div>
+        
+        <footer>Kontrola kvality – Foto poznámky | ${new Date().toLocaleDateString('cs-CZ')}</footer>
+      </div>
     </body>
     </html>
   `);
