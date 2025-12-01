@@ -1,4 +1,4 @@
-const CACHE_NAME = 'foto-poznamky-cache-v1';
+const CACHE_NAME = 'foto-poznamky-cache-v2';
 const urlsToCache = [
   './',
   './index.html',
