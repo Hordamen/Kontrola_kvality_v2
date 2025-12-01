@@ -355,215 +355,117 @@ async function viewFull(id) {
     <head>
       <meta charset="utf-8">
       <title>Záznam - ${entry.timeText}</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
       <style>
         * { 
           box-sizing: border-box;
           margin: 0;
           padding: 0;
         }
-        html, body { 
-          width: 100%;
-          height: 100%;
-          font-size: 16px;
-        }
         body {
           font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
           background: #f5f7fa;
           color: #111;
-          display: flex;
-          flex-direction: column;
-          overflow-y: auto;
-          overflow-x: hidden;
+          padding: 1rem;
+          width: 100%;
         }
         .container {
           width: 100%;
-          max-width: 100%;
-          padding: 0.5rem;
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-        }
-        .header {
-          margin-bottom: 1rem;
-          padding: 0.75rem;
           background: #fff;
           border-radius: 8px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          padding: 1.5rem;
         }
-        .header h1 {
-          margin: 0 0 0.5rem 0;
-          font-size: 1.4rem;
+        h1 {
+          font-size: 2rem;
           color: #1976d2;
+          margin-bottom: 1rem;
           line-height: 1.3;
         }
-        .header .meta {
-          font-size: 1rem;
+        .meta {
+          font-size: 1.2rem;
           color: #555;
-          line-height: 1.8;
-          word-break: break-word;
+          margin-bottom: 2rem;
+          line-height: 2;
         }
-        .photo-container {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0.5rem 0;
-          min-height: 40vh;
-          background: #fff;
-          border-radius: 8px;
-          padding: 0.5rem;
-          overflow: hidden;
+        .meta strong {
+          color: #1976d2;
+          font-weight: 600;
         }
         img {
+          width: 100%;
           max-width: 100%;
-          max-height: 100%;
-          width: auto;
           height: auto;
-          border-radius: 6px;
-          border: 1px solid #ddd;
-          object-fit: contain;
-        }
-        .content {
-          margin: 0.5rem 0;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          flex-shrink: 0;
+          border-radius: 8px;
+          border: 2px solid #ddd;
+          margin: 2rem 0;
+          display: block;
         }
         .field {
-          padding: 0.875rem;
-          background: #fff;
-          border-left: 4px solid #1976d2;
+          margin: 2rem 0;
+          padding: 1.5rem;
+          background: #f9f9f9;
+          border-left: 5px solid #1976d2;
           border-radius: 6px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .field strong {
           color: #1976d2;
-          font-weight: 600;
+          font-size: 1.3rem;
           display: block;
-          margin-bottom: 0.5rem;
-          font-size: 1.05rem;
+          margin-bottom: 1rem;
         }
         .field-value {
           color: #333;
-          font-size: 1rem;
-          line-height: 1.6;
+          font-size: 1.2rem;
+          line-height: 1.8;
           word-break: break-word;
           white-space: pre-wrap;
         }
-        .empty-field {
-          color: #999;
-          font-style: italic;
-        }
         footer {
-          padding: 0.75rem;
-          margin-top: 0.5rem;
-          border-top: 1px solid #ddd;
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 2px solid #ddd;
           text-align: center;
-          font-size: 0.85rem;
+          font-size: 1rem;
           color: #666;
-          background: #fff;
-          border-radius: 8px;
-          flex-shrink: 0;
-        }
-        
-        /* Tablet optimalizace (768px) */
-        @media (min-width: 768px) {
-          html, body { font-size: 18px; }
-          .container { padding: 1rem; }
-          .header { padding: 1.25rem; margin-bottom: 1.25rem; }
-          .header h1 { font-size: 1.8rem; margin-bottom: 0.75rem; }
-          .header .meta { font-size: 1.1rem; }
-          .photo-container { min-height: 50vh; padding: 1rem; margin: 1rem 0; }
-          .field { padding: 1.25rem; margin-bottom: 0; }
-          .field strong { font-size: 1.2rem; margin-bottom: 0.75rem; }
-          .field-value { font-size: 1.1rem; }
-        }
-        
-        /* Velké tablety a desktop (1024px+) */
-        @media (min-width: 1024px) {
-          html, body { font-size: 18px; }
-          .container { 
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1.5rem;
-            display: grid;
-            grid-template-areas:
-              "header"
-              "photo"
-              "content"
-              "footer";
-            grid-template-rows: auto 1fr auto auto;
-            min-height: 100vh;
-            gap: 1rem;
-          }
-          .header { grid-area: header; }
-          .photo-container { 
-            grid-area: photo;
-            min-height: 60vh;
-          }
-          .content { grid-area: content; }
-          footer { grid-area: footer; }
-        }
-        
-        /* Mobilní optimalizace */
-        @media (max-width: 480px) {
-          html, body { font-size: 14px; }
-          .container { padding: 0.5rem; }
-          .header { padding: 0.75rem; margin-bottom: 0.75rem; }
-          .header h1 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-          .header .meta { font-size: 0.95rem; }
-          .photo-container { min-height: 35vh; padding: 0.5rem; margin: 0.5rem 0; }
-          .field { padding: 0.75rem; }
-          .field strong { font-size: 1rem; }
-          .field-value { font-size: 0.95rem; }
-          footer { font-size: 0.8rem; padding: 0.5rem; }
         }
       </style>
     </head>
     <body>
       <div class="container">
-        <div class="header">
-          <h1>Záznam z kontroly kvality</h1>
-          <div class="meta">
-            <strong>📅 Čas:</strong> ${entry.timeText}<br>
-            <strong>📍 Poloha:</strong> ${entry.coords ? entry.coords.lat + ", " + entry.coords.lon : "bez polohy"}
+        <h1>Záznam z kontroly kvality</h1>
+        <div class="meta">
+          <strong>📅 Čas:</strong> ${entry.timeText}<br>
+          <strong>📍 Poloha:</strong> ${entry.coords ? entry.coords.lat + ", " + entry.coords.lon : "bez polohy"}
+        </div>
+        
+        <img src="${entry.photo}" alt="Fotografie záznamu">
+        
+        ${entry.longNote ? `
+          <div class="field">
+            <strong>📏 Podélné měření</strong>
+            <div class="field-value">${escapeHtml(entry.longNote)}</div>
           </div>
-        </div>
+        ` : ''}
         
-        <div class="photo-container">
-          <img src="${entry.photo}" alt="Fotografie záznamu">
-        </div>
+        ${entry.crossNote ? `
+          <div class="field">
+            <strong>↔️ Příčné měření</strong>
+            <div class="field-value">${escapeHtml(entry.crossNote)}</div>
+          </div>
+        ` : ''}
         
-        <div class="content">
-          ${entry.longNote ? `
-            <div class="field">
-              <strong>📏 Podélné měření</strong>
-              <div class="field-value">${escapeHtml(entry.longNote)}</div>
-            </div>
-          ` : ''}
-          
-          ${entry.crossNote ? `
-            <div class="field">
-              <strong>↔️ Příčné měření</strong>
-              <div class="field-value">${escapeHtml(entry.crossNote)}</div>
-            </div>
-          ` : ''}
-          
-          ${entry.note ? `
-            <div class="field">
-              <strong>📝 Poznámka</strong>
-              <div class="field-value">${escapeHtml(entry.note)}</div>
-            </div>
-          ` : ''}
-          
-          ${!entry.longNote && !entry.crossNote && !entry.note ? `
-            <div class="field">
-              <div class="field-value empty-field">Bez dalších informací</div>
-            </div>
-          ` : ''}
-        </div>
+        ${entry.note ? `
+          <div class="field">
+            <strong>📝 Poznámka</strong>
+            <div class="field-value">${escapeHtml(entry.note)}</div>
+          </div>
+        ` : ''}
+        
+        ${!entry.longNote && !entry.crossNote && !entry.note ? `
+          <div class="field" style="color: #999; font-style: italic;">
+            Bez dalších informací
+          </div>
+        ` : ''}
         
         <footer>Kontrola kvality – Foto poznámky | ${new Date().toLocaleDateString('cs-CZ')}</footer>
       </div>
