@@ -33,80 +33,43 @@
     button:disabled{opacity:0.5;cursor:not-allowed}
     .btn-secondary{background:#f1f3f6;color:#333}
     .btn-danger{background:var(--danger)}
-    <!DOCTYPE html>
-    <html lang="cs">
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-      <title>Foto poznámky – Kontrola kvality</title>
-      <link rel="manifest" href="manifest.json?v=2">
-      <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
-      <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
-      <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
-      <link rel="icon" href="icon512.png" type="image/png" sizes="512x512">
-      <meta name="theme-color" content="#1976d2">
-      <meta name="apple-mobile-web-app-capable" content="yes">
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-      <meta name="apple-mobile-web-app-title" content="KvalitaFoto">
-      <style>
-        :root{--brand:#1976d2;--muted:#666;--danger:#ff5252}
-        *{box-sizing:border-box}
-        body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;padding:1rem;background:#f5f7fa;color:#111;max-width:1200px;margin:0 auto}
-        .header{display:flex;gap:0.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
-        .logo{width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0}
-        .header-text{flex:1;min-width:200px}
-        h1{font-size:1.25rem;margin:0;color:var(--brand)}
-        .subtitle{color:var(--muted);font-size:0.85rem;margin-top:4px}
-        form{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-        label{font-weight:600;display:block;margin-top:0.75rem;font-size:0.95rem;color:#333}
-        input[type=file]{width:100%;padding:8px;border:2px dashed #e0e0e0;border-radius:8px;cursor:pointer;font-size:0.9rem}
-        textarea{width:100%;min-height:64px;margin-top:6px;padding:10px;border-radius:8px;border:1px solid #e0e0e0;resize:vertical;font-family:inherit;font-size:0.95rem;transition:border-color 0.2s}
-        textarea:focus{outline:none;border-color:var(--brand)}
-        .form-actions{margin-top:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-        button{background:var(--brand);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.95rem;transition:opacity 0.2s}
-        button:hover{opacity:0.9}
-        button:disabled{opacity:0.5;cursor:not-allowed}
-        .btn-secondary{background:#f1f3f6;color:#333}
-        .btn-danger{background:var(--danger)}
-        #status{margin-left:8px;color:var(--muted);font-size:0.9rem}
-        .entries{margin-top:1.5rem;display:grid;gap:1rem}
-        .entry{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.04);display:grid;gap:1rem;transition:box-shadow 0.2s}
-        .entry:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
-        .entry-content{display:grid;grid-template-columns:140px 1fr;gap:1rem;align-items:start}
-        .thumb{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #e6eef9}
-        .meta{display:flex;flex-direction:column;gap:8px}
-        .meta-header{display:flex;justify-content:space-between;align-items:start;gap:8px;flex-wrap:wrap}
-        .meta-header strong{font-size:0.95rem}
-        .meta-info{color:var(--muted);font-size:0.85rem}
-        .meta p{margin:0;font-size:0.9rem;color:#333;line-height:1.5}
-        .meta p strong{color:#111;font-size:0.88rem}
-        .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-        .btn-small{background:#f1f3f6;color:#333;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-size:0.85rem;font-weight:500}
-        .btn-small:hover{background:#e8eaed}
-        .btn-small.danger{background:var(--danger);color:#fff}
-        .btn-small.danger:hover{background:#e64545}
-        footer{margin-top:2rem;padding-top:1rem;text-align:center;color:var(--muted);font-size:0.85rem;border-top:1px solid #e0e0e0}
-        #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999}
-        #viewer[aria-hidden="false"]{display:flex}
-        #viewer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.5)}
-        #viewer-content{position:relative;max-width:1100px;width:100%;max-height:95vh;overflow:auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-        #viewer-close{position:absolute;right:8px;top:8px;border:none;background:transparent;font-size:20px;cursor:pointer}
-        #viewer-body img{max-width:100%;height:auto;border-radius:8px;border:1px solid #ddd;display:block;margin:12px 0}
-        #viewer-body h1{font-size:1.6rem;color:var(--brand);margin:0 0 8px 0}
-        #viewer-body .meta{font-size:1rem;color:var(--muted);margin-bottom:8px}
-        #viewer-body .field{background:#f9f9f9;padding:12px;border-left:4px solid var(--brand);border-radius:6px;margin-top:10px}
-
-        /* update banner */
-        .update-banner{position:fixed;left:12px;right:12px;bottom:12px;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);padding:10px 12px;display:flex;align-items:center;gap:12px;z-index:10000}
-        .update-banner .msg{flex:1;color:#111}
-        .update-banner button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
-        .update-banner .primary{background:var(--brand);color:#fff}
-        .update-banner .secondary{background:#f1f3f6;color:#333}
-
-        @media (max-width:768px){body{padding:0.75rem}.thumb{height:80px}.entry-content{grid-template-columns:100px 1fr}}
-      </style>
-    </head>
-    <body>
+    #status{margin-left:8px;color:var(--muted);font-size:0.9rem}
+    .entries{margin-top:1.5rem;display:grid;gap:1rem}
+    .entry{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.04);display:grid;gap:1rem;transition:box-shadow 0.2s}
+    .entry:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+    .entry-content{display:grid;grid-template-columns:140px 1fr;gap:1rem;align-items:start}
+    .thumb{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #e6eef9}
+    .meta{display:flex;flex-direction:column;gap:8px}
+    .meta-header{display:flex;justify-content:space-between;align-items:start;gap:8px;flex-wrap:wrap}
+    .meta-header strong{font-size:0.95rem}
+    .meta-info{color:var(--muted);font-size:0.85rem}
+    .meta p{margin:0;font-size:0.9rem;color:#333;line-height:1.5}
+    .meta p strong{color:#111;font-size:0.88rem}
+    .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .btn-small{background:#f1f3f6;color:#333;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-size:0.85rem;font-weight:500}
+    .btn-small:hover{background:#e8eaed}
+    .btn-small.danger{background:var(--danger);color:#fff}
+    .btn-small.danger:hover{background:#e64545}
+    footer{margin-top:2rem;padding-top:1rem;text-align:center;color:var(--muted);font-size:0.85rem;border-top:1px solid #e0e0e0}
+    #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999}
+    #viewer[aria-hidden="false"]{display:flex}
+    #viewer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.5)}
+    #viewer-content{position:relative;max-width:1100px;width:100%;max-height:95vh;overflow:auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+    #viewer-close{position:absolute;right:8px;top:8px;border:none;background:transparent;font-size:20px;cursor:pointer}
+    #viewer-body img{max-width:100%;height:auto;border-radius:8px;border:1px solid #ddd;display:block;margin:12px 0}
+    #viewer-body h1{font-size:1.6rem;color:var(--brand);margin:0 0 8px 0}
+    #viewer-body .meta{font-size:1rem;color:var(--muted);margin-bottom:8px}
+    #viewer-body .field{background:#f9f9f9;padding:12px;border-left:4px solid var(--brand);border-radius:6px;margin-top:10px}
+    /* update banner */
+    .update-banner{position:fixed;left:12px;right:12px;bottom:12px;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);padding:10px 12px;display:flex;align-items:center;gap:12px;z-index:10000}
+    .update-banner .msg{flex:1;color:#111}
+    .update-banner button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+    .update-banner .primary{background:var(--brand);color:#fff}
+    .update-banner .secondary{background:#f1f3f6;color:#333}
+    @media (max-width:768px){body{padding:0.75rem}.thumb{height:80px}.entry-content{grid-template-columns:100px 1fr}}
+  </style>
+</head>
+<body>
       <div class="header">
         <img src="icon2.png" alt="logo" class="logo" onerror="this.style.display='none'">
         <div class="header-text">
@@ -237,21 +200,11 @@
         const data = await getAllEntries(); const entriesEl = document.getElementById('entries'); const statusEl = document.getElementById('status'); entriesEl.innerHTML='';
         data.forEach(e=>{
           const div=document.createElement('div'); div.className='entry'; const coordsText = e.coords?`${e.coords.lat}, ${e.coords.lon}`:'bez polohy';
-          div.innerHTML = `
-            <div class="entry-content">
-              <img class="thumb" src="${e.photo}" alt="foto">
-              <div class="meta">
-                <div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>
-                ${e.longNote?`<p><strong>Podélné měření:</strong> ${escapeHtml(e.longNote)}</p>`:''}
-                ${e.crossNote?`<p><strong>Příčné měření:</strong> ${escapeHtml(e.crossNote)}</p>`:''}
-                ${e.note?`<p><strong>Poznámka:</strong> ${escapeHtml(e.note)}</p>`:''}
-                <div class="actions">
-                  <button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button>
-                  <button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button>
-                  <button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button>
-                </div>
-              </div>
-            </div>`;
+          let notesHtml = '';
+          if(e.longNote) notesHtml += `<p><strong>📏 Podélné měření:</strong> ${escapeHtml(e.longNote)}</p>`;
+          if(e.crossNote) notesHtml += `<p><strong>↔️ Příčné měření:</strong> ${escapeHtml(e.crossNote)}</p>`;
+          if(e.note) notesHtml += `<p><strong>📝 Poznámka:</strong> ${escapeHtml(e.note)}</p>`;
+          div.innerHTML = `<div class="entry-content"><img class="thumb" src="${e.photo}" alt="foto"><div class="meta"><div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>${notesHtml}<div class="actions"><button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button><button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button><button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button></div></div></div>`;
           div.querySelector('.view-btn').addEventListener('click', ()=> viewFull(e.id));
           div.querySelector('.delete-btn').addEventListener('click', async ()=>{ if(confirm('Opravdu smazat tento záznam?')){ await deleteEntryById(e.id); await render(); }});
           div.querySelector('.download-btn').addEventListener('click', ()=> downloadPhoto(e.photo, e.id));
