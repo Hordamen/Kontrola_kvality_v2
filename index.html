@@ -2,14 +2,13 @@
 <html lang="cs">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
   <title>Foto poznámky – Kontrola kvality</title>
   <link rel="manifest" href="manifest.json?v=2">
   <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
   <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
   <link rel="icon" href="icon512.png" type="image/png" sizes="512x512">
-  <link rel="shortcut icon" href="icon192.png" type="image/png">
   <meta name="theme-color" content="#1976d2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,21 +17,16 @@
     :root{--brand:#1976d2;--muted:#666;--danger:#ff5252}
     *{box-sizing:border-box}
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;padding:1rem;background:#f5f7fa;color:#111;max-width:1200px;margin:0 auto}
-    
     .header{display:flex;gap:0.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
     .logo{width:56px;height:56px;object-fit:contain;border-radius:8px;flex-shrink:0}
     .header-text{flex:1;min-width:200px}
     h1{font-size:1.25rem;margin:0;color:var(--brand)}
     .subtitle{color:var(--muted);font-size:0.85rem;margin-top:4px}
-    
     form{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
     label{font-weight:600;display:block;margin-top:0.75rem;font-size:0.95rem;color:#333}
-    label:first-of-type{margin-top:0}
     input[type=file]{width:100%;padding:8px;border:2px dashed #e0e0e0;border-radius:8px;cursor:pointer;font-size:0.9rem}
-    input[type=file]:hover{border-color:var(--brand)}
     textarea{width:100%;min-height:64px;margin-top:6px;padding:10px;border-radius:8px;border:1px solid #e0e0e0;resize:vertical;font-family:inherit;font-size:0.95rem;transition:border-color 0.2s}
     textarea:focus{outline:none;border-color:var(--brand)}
-    
     .form-actions{margin-top:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     button{background:var(--brand);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.95rem;transition:opacity 0.2s}
     button:hover{opacity:0.9}
@@ -40,11 +34,9 @@
     .btn-secondary{background:#f1f3f6;color:#333}
     .btn-danger{background:var(--danger)}
     #status{margin-left:8px;color:var(--muted);font-size:0.9rem}
-    
     .entries{margin-top:1.5rem;display:grid;gap:1rem}
     .entry{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.04);display:grid;gap:1rem;transition:box-shadow 0.2s}
     .entry:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
-    
     .entry-content{display:grid;grid-template-columns:140px 1fr;gap:1rem;align-items:start}
     .thumb{width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid #e6eef9}
     .meta{display:flex;flex-direction:column;gap:8px}
@@ -53,43 +45,22 @@
     .meta-info{color:var(--muted);font-size:0.85rem}
     .meta p{margin:0;font-size:0.9rem;color:#333;line-height:1.5}
     .meta p strong{color:#111;font-size:0.88rem}
-    
     .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
     .btn-small{background:#f1f3f6;color:#333;padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-size:0.85rem;font-weight:500}
     .btn-small:hover{background:#e8eaed}
     .btn-small.danger{background:var(--danger);color:#fff}
     .btn-small.danger:hover{background:#e64545}
-    
     footer{margin-top:2rem;padding-top:1rem;text-align:center;color:var(--muted);font-size:0.85rem;border-top:1px solid #e0e0e0}
-    
-    /* Responzivní design */
-    @media (max-width: 768px){
-      body{padding:0.75rem}
-      h1{font-size:1.1rem}
-      .subtitle{font-size:0.8rem}
-      form{padding:0.875rem}
-      .entry-content{grid-template-columns:100px 1fr;gap:0.75rem}
-      .thumb{height:80px}
-      .meta p{font-size:0.85rem}
-    }
-    
-    @media (max-width: 480px){
-      .header{gap:0.5rem}
-      .logo{width:48px;height:48px}
-      h1{font-size:1rem}
-      .subtitle{font-size:0.75rem}
-      .entry-content{grid-template-columns:1fr;gap:0.75rem}
-      .thumb{width:100%;height:180px;object-fit:cover}
-      .form-actions{flex-direction:column;align-items:stretch}
-      .form-actions button{width:100%}
-      #status{margin-left:0;margin-top:8px}
-      .actions{width:100%}
-      .btn-small{flex:1}
-    }
-    
-    @media (min-width: 769px){
-      .entries{grid-template-columns:repeat(auto-fill,minmax(500px,1fr))}
-    }
+    #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999}
+    #viewer[aria-hidden="false"]{display:flex}
+    #viewer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.5)}
+    #viewer-content{position:relative;max-width:1100px;width:100%;max-height:95vh;overflow:auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
+    #viewer-close{position:absolute;right:8px;top:8px;border:none;background:transparent;font-size:20px;cursor:pointer}
+    #viewer-body img{max-width:100%;height:auto;border-radius:8px;border:1px solid #ddd;display:block;margin:12px 0}
+    #viewer-body h1{font-size:1.6rem;color:var(--brand);margin:0 0 8px 0}
+    #viewer-body .meta{font-size:1rem;color:var(--muted);margin-bottom:8px}
+    #viewer-body .field{background:#f9f9f9;padding:12px;border-left:4px solid var(--brand);border-radius:6px;margin-top:10px}
+    @media (max-width:768px){body{padding:0.75rem}.thumb{height:80px}.entry-content{grid-template-columns:100px 1fr}}
   </style>
 </head>
 <body>
@@ -104,16 +75,12 @@
   <form id="noteForm">
     <label>Fotka (foto nebo galerie)</label>
     <input id="photo" type="file" accept="image/*" capture="camera">
-    
     <label>Podélné měření</label>
     <textarea id="longNote" placeholder="Zadejte podélné měření..."></textarea>
-    
     <label>Příčné měření</label>
     <textarea id="crossNote" placeholder="Zadejte příčné měření..."></textarea>
-    
     <label>Poznámka</label>
     <textarea id="noteField" placeholder="Doplňující poznámka..."></textarea>
-    
     <div class="form-actions">
       <button id="saveBtn" type="submit">Uložit záznam</button>
       <button id="clearAll" type="button" class="btn-secondary">Vymazat vše</button>
@@ -126,60 +93,205 @@
 
   <section class="entries" id="entries"></section>
 
+  <div id="viewer" aria-hidden="true">
+    <div id="viewer-backdrop"></div>
+    <div id="viewer-content" role="dialog" aria-modal="true">
+      <button id="viewer-close" aria-label="Zavřít">✕</button>
+      <div id="viewer-body"></div>
+    </div>
+  </div>
+
   <footer>Aplikace funguje offline. Data jsou uložena lokálně v zařízení (IndexedDB).</footer>
 
-<script>
-// IndexedDB setup
-const DB_NAME = "fotoPoznamkyDB";
-const DB_VERSION = 1;
-const STORE_NAME = "entries";
-let db;
+  <script>
+  // Simple IndexedDB wrapper
+  const DB_NAME = 'fotoPoznamkyDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'entries';
+  let db;
 
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      db = request.result;
-      resolve(db);
-    };
-    
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
-        store.createIndex("time", "time", { unique: false });
-      }
-    };
-  });
-}
+  function initDB(){
+    return new Promise((res, rej)=>{
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const idb = e.target.result;
+        if(!idb.objectStoreNames.contains(STORE_NAME)){
+          const store = idb.createObjectStore(STORE_NAME,{keyPath:'id'});
+          store.createIndex('time','time',{unique:false});
+        }
+      };
+      req.onsuccess = ()=>{ db = req.result; res(db); };
+      req.onerror = ()=> rej(req.error);
+    });
+  }
 
-function getAllEntries() {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readonly");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.getAll();
-    
-    request.onsuccess = () => {
-      const entries = request.result || [];
-      entries.sort((a, b) => b.time - a.time);
-      resolve(entries);
-    };
-    request.onerror = () => reject(request.error);
-  });
-}
+  function addEntry(entry){
+    return new Promise((res, rej)=>{
+      const tx = db.transaction([STORE_NAME],'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const r = store.add(entry);
+      r.onsuccess = ()=> res(entry);
+      r.onerror = ()=> rej(r.error);
+    });
+  }
 
-function addEntry(entry) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([STORE_NAME], "readwrite");
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.add(entry);
-    
-    request.onsuccess = () => resolve(entry);
-    request.onerror = () => reject(request.error);
+  function getAllEntries(){
+    return new Promise((res, rej)=>{
+      const tx = db.transaction([STORE_NAME],'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const r = store.getAll();
+      r.onsuccess = ()=>{
+        const arr = r.result || [];
+        arr.sort((a,b)=>b.time - a.time);
+        res(arr);
+      };
+      r.onerror = ()=> rej(r.error);
+    });
+  }
+
+  function deleteEntryById(id){
+    return new Promise((res, rej)=>{
+      const tx = db.transaction([STORE_NAME],'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const r = store.delete(id);
+      r.onsuccess = ()=> res();
+      r.onerror = ()=> rej(r.error);
+    });
+  }
+
+  function fileToBase64(file){
+    return new Promise((res, rej)=>{
+      const fr = new FileReader();
+      fr.onload = ()=> res(fr.result);
+      fr.onerror = ()=> rej(fr.error);
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function formatDate(ts){
+    return new Date(ts).toLocaleString('cs-CZ', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  async function saveEntry(photoFile, longNote, crossNote, note){
+    const coords = await (async ()=>{
+      if(!('geolocation' in navigator)) return null;
+      return new Promise(res=>{
+        navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude.toFixed(6), lon:p.coords.longitude.toFixed(6)}), ()=>res(null), {enableHighAccuracy:true, timeout:8000});
+      });
+    })();
+    const photoData = await fileToBase64(photoFile);
+    const entry = { id:Date.now().toString(), time:Date.now(), timeText:formatDate(Date.now()), coords, longNote, crossNote, note, photo:photoData };
+    await addEntry(entry);
+    return entry;
+  }
+
+  function escapeHtml(s){ return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+
+  function downloadPhoto(dataURL, id){
+    if(!dataURL) { alert('Fotografie není dostupná pro stažení.'); return; }
+    const a = document.createElement('a'); a.href = dataURL; a.download = `fotopoznamka_${id}.png`; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  async function render(){
+    const data = await getAllEntries();
+    const entriesEl = document.getElementById('entries');
+    const statusEl = document.getElementById('status');
+    entriesEl.innerHTML = '';
+    data.forEach(e=>{
+      const div = document.createElement('div'); div.className='entry';
+      const coordsText = e.coords ? `${e.coords.lat}, ${e.coords.lon}` : 'bez polohy';
+      div.innerHTML = `
+        <div class="entry-content">
+          <img class="thumb" src="${e.photo}" alt="foto">
+          <div class="meta">
+            <div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>
+            ${e.longNote?`<p><strong>Podélné měření:</strong> ${escapeHtml(e.longNote)}</p>`:''}
+            ${e.crossNote?`<p><strong>Příčné měření:</strong> ${escapeHtml(e.crossNote)}</p>`:''}
+            ${e.note?`<p><strong>Poznámka:</strong> ${escapeHtml(e.note)}</p>`:''}
+            <div class="actions">
+              <button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button>
+              <button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button>
+              <button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button>
+            </div>
+          </div>
+        </div>`;
+      div.querySelector('.view-btn').addEventListener('click', ()=> viewFull(e.id));
+      div.querySelector('.delete-btn').addEventListener('click', async ()=>{ if(confirm('Opravdu smazat tento záznam?')){ await deleteEntryById(e.id); await render(); }});
+      div.querySelector('.download-btn').addEventListener('click', ()=> downloadPhoto(e.photo, e.id));
+      entriesEl.appendChild(div);
+    });
+    statusEl.textContent = data.length ? `${data.length} ${data.length===1?'záznam': data.length<5?'záznamy':'záznamů'}` : 'žádné záznamy';
+  }
+
+  async function viewFull(id){
+    const data = await getAllEntries();
+    const entry = data.find(d=>d.id===id);
+    if(!entry){ alert('Záznam nenalezen'); return; }
+    const viewer = document.getElementById('viewer');
+    const body = document.getElementById('viewer-body');
+    const coordsText = entry.coords ? `${entry.coords.lat}, ${entry.coords.lon}` : 'bez polohy';
+    body.innerHTML = `
+      <h1>Záznam z kontroly kvality</h1>
+      <div class="meta"><strong>📅 Čas:</strong> ${entry.timeText} &nbsp; <strong>📍 Poloha:</strong> ${coordsText}</div>
+      <img src="${entry.photo}" alt="Fotografie záznamu">
+      ${entry.longNote?`<div class="field"><strong>📏 Podélné měření</strong><div class="field-value">${escapeHtml(entry.longNote)}</div></div>`:''}
+      ${entry.crossNote?`<div class="field"><strong>↔️ Příčné měření</strong><div class="field-value">${escapeHtml(entry.crossNote)}</div></div>`:''}
+      ${entry.note?`<div class="field"><strong>📝 Poznámka</strong><div class="field-value">${escapeHtml(entry.note)}</div></div>`:''}
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="viewer-download" class="btn-small">Stáhnout foto</button>
+        <button id="viewer-delete" class="btn-small danger">Smazat záznam</button>
+      </div>
+      <footer>Kontrola kvality – Foto poznámky | ${new Date().toLocaleDateString('cs-CZ')}</footer>
+    `;
+    viewer.setAttribute('aria-hidden','false'); viewer.style.display='flex'; document.documentElement.style.overflow='hidden';
+    document.getElementById('viewer-close').onclick = closeViewer;
+    document.getElementById('viewer-backdrop').onclick = closeViewer;
+    document.getElementById('viewer-download').onclick = ()=> downloadPhoto(entry.photo, entry.id);
+    document.getElementById('viewer-delete').onclick = async ()=>{ if(confirm('Opravdu smazat tento záznam?')){ await deleteEntryById(entry.id); closeViewer(); await render(); }};
+    function closeViewer(){ viewer.setAttribute('aria-hidden','true'); viewer.style.display='none'; document.documentElement.style.overflow=''; document.getElementById('viewer-close').onclick=null; document.getElementById('viewer-backdrop').onclick=null; }
+  }
+
+  // wire up form
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    await initDB();
+    await render();
+    const form = document.getElementById('noteForm');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fileInput = document.getElementById('photo');
+      if(!fileInput.files || fileInput.files.length===0){ alert('Vyberte fotografii.'); return; }
+      const longNote = document.getElementById('longNote').value.trim();
+      const crossNote = document.getElementById('crossNote').value.trim();
+      const note = document.getElementById('noteField').value.trim();
+      const entry = await saveEntry(fileInput.files[0], longNote, crossNote, note);
+      fileInput.value = '';
+      document.getElementById('longNote').value=''; document.getElementById('crossNote').value=''; document.getElementById('noteField').value='';
+      await render();
+      alert('Záznam uložen.');
+    });
+
+    document.getElementById('clearAll').addEventListener('click', async ()=>{ if(confirm('Opravdu vymazat všechna data?')){ const tx = db.transaction([STORE_NAME],'readwrite'); tx.objectStore(STORE_NAME).clear(); tx.oncomplete = async ()=>{ await render(); }; }});
+
+    // import/export
+    document.getElementById('exportBtn').addEventListener('click', async ()=>{
+      const data = await getAllEntries(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)],{type:'application/json'})); a.download = 'fotopoznamky_export.json'; document.body.appendChild(a); a.click(); a.remove();
+    });
+    document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+    document.getElementById('importFile').addEventListener('change', async (ev)=>{
+      const f = ev.target.files[0]; if(!f) return; const txt = await f.text(); try{ const arr = JSON.parse(txt); for(const it of arr){ try{ await addEntry(it); }catch(e){} } await render(); alert('Import dokončen.'); }catch(err){ alert('Chyba importu: ' + err.message); }
+    });
+
+    // register service worker
+    if('serviceWorker' in navigator){
+      try{
+        const reg = await navigator.serviceWorker.register('service-worker.js');
+        if(reg && reg.update) reg.update();
+      }catch(err){ console.warn('SW registration failed', err); }
+    }
   });
-}
+  </script>
+</body>
+</html>
 
 function deleteEntryById(id) {
   return new Promise((resolve, reject) => {
@@ -442,153 +554,49 @@ async function viewFull(id) {
         
         ${entry.longNote ? `
           <div class="field">
-            <strong>📏 Podélné měření</strong>
-            <div class="field-value">${escapeHtml(entry.longNote)}</div>
-          </div>
-        ` : ''}
-        
-        ${entry.crossNote ? `
-          <div class="field">
-            <strong>↔️ Příčné měření</strong>
-            <div class="field-value">${escapeHtml(entry.crossNote)}</div>
-          </div>
-        ` : ''}
-        
-        ${entry.note ? `
-          <div class="field">
-            <strong>📝 Poznámka</strong>
-            <div class="field-value">${escapeHtml(entry.note)}</div>
-          </div>
-        ` : ''}
-        
-        ${!entry.longNote && !entry.crossNote && !entry.note ? `
-          <div class="field" style="color: #999; font-style: italic;">
-            Bez dalších informací
-          </div>
-        ` : ''}
-        
-        <footer>Kontrola kvality – Foto poznámky | ${new Date().toLocaleDateString('cs-CZ')}</footer>
-      </div>
-    </body>
-    </html>
-  `);
-}
+            async function viewFull(id) {
+              const data = await getAllEntries();
+              const entry = data.find(d => d.id === id);
+              if (!entry) { alert("Záznam nenalezen"); return; }
 
-// Export and Import functions
-async function exportData() {
-  const entries = await getAllEntries();
-  if (entries.length === 0) {
-    alert("Není co exportovat.");
-    return;
-  }
+              const viewer = document.getElementById('viewer');
+              const body = document.getElementById('viewer-body');
+              const coordsText = entry.coords ? `${entry.coords.lat}, ${entry.coords.lon}` : 'bez polohy';
 
-  const jsonData = JSON.stringify(entries, null, 2);
-  const blob = new Blob([jsonData], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  const date = new Date().toISOString().split('T')[0];
-  a.download = `futtec_kontrola_kvality_export_${date}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+              body.innerHTML = `
+                <h1>Záznam z kontroly kvality</h1>
+                <div class="meta"><strong>📅 Čas:</strong> ${entry.timeText} &nbsp; <strong>📍 Poloha:</strong> ${coordsText}</div>
+                <img src="${entry.photo}" alt="Fotografie záznamu">
+                ${entry.longNote ? `<div class="field"><strong>📏 Podélné měření</strong><div class="field-value">${escapeHtml(entry.longNote)}</div></div>` : ''}
+                ${entry.crossNote ? `<div class="field"><strong>↔️ Příčné měření</strong><div class="field-value">${escapeHtml(entry.crossNote)}</div></div>` : ''}
+                ${entry.note ? `<div class="field"><strong>📝 Poznámka</strong><div class="field-value">${escapeHtml(entry.note)}</div></div>` : ''}
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                  <button id="viewer-download" class="btn-small">Stáhnout foto</button>
+                  <button id="viewer-delete" class="btn-small btn-small danger">Smazat záznam</button>
+                </div>
+                <footer>Kontrola kvality – Foto poznámky | ${new Date().toLocaleDateString('cs-CZ')}</footer>
+              `;
 
-function importData(file) {
-  if (!file) return;
+              // show viewer
+              viewer.setAttribute('aria-hidden', 'false');
+              // prevent background scroll
+              document.documentElement.style.overflow = 'hidden';
 
-  const reader = new FileReader();
-  reader.onload = async (event) => {
-    try {
-      const importedEntries = JSON.parse(event.target.result);
-      if (!Array.isArray(importedEntries)) {
-        throw new Error("Importovaný soubor nemá správný formát (není pole).");
-      }
+              // attach button handlers
+              document.getElementById('viewer-close').onclick = () => closeViewer();
+              document.getElementById('viewer-backdrop').onclick = () => closeViewer();
+              document.getElementById('viewer-download').onclick = () => downloadPhoto(entry.photo, entry.id);
+              document.getElementById('viewer-delete').onclick = async () => {
+                if (!confirm('Opravdu smazat tento záznam?')) return;
+                await deleteEntry(entry.id);
+                closeViewer();
+              };
 
-      if (!confirm(`Opravdu chcete importovat ${importedEntries.length} záznamů? Stávající záznamy s duplicitním ID budou přeskočeny.`)) {
-        return;
-      }
-
-      const existingEntries = await getAllEntries();
-      const existingIds = new Set(existingEntries.map(e => e.id));
-      const newEntries = importedEntries.filter(entry => !existingIds.has(entry.id));
-
-      for (const entry of newEntries) {
-        await addEntry(entry);
-      }
-      alert(`Import dokončen. Přidáno ${newEntries.length} nových záznamů.`);
-      await render();
-    } catch (error) {
-      alert("Chyba při importu dat: " + error.message);
-    }
-  };
-  reader.readAsText(file);
-}
-
-// Form submission
-const form = document.getElementById("noteForm");
-form.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  const photoInput = document.getElementById("photo");
-  const file = photoInput.files[0];
-  if (!file) {
-    alert("Vyber fotku!");
-    return;
-  }
-  const longNote = document.getElementById("longNote").value;
-  const crossNote = document.getElementById("crossNote").value;
-  const note = document.getElementById("noteField").value;
-  
-  try {
-    document.getElementById("saveBtn").disabled = true;
-    document.getElementById("status").textContent = "Ukládám...";
-    await saveEntry(file, longNote, crossNote, note);
-    form.reset();
-    await render();
-  } catch (err) {
-    alert("Chyba při ukládání: " + err);
-  } finally {
-    document.getElementById("saveBtn").disabled = false;
-    document.getElementById("status").textContent = "";
-  }
-});
-
-// Clear all button
-const clearAllBtn = document.getElementById("clearAll");
-clearAllBtn.addEventListener("click", async () => {
-  if (!confirm("Smazat VŠECHNY záznamy? Tuto akci nelze vrátit.")) return;
-  await clearAllEntries();
-  await render();
-});
-
-// Export button
-const exportBtn = document.getElementById("exportBtn");
-exportBtn.addEventListener("click", exportData);
-
-// Import button and file input
-const importBtn = document.getElementById("importBtn");
-const importFile = document.getElementById("importFile");
-importBtn.addEventListener("click", () => {
-  importFile.click();
-});
-importFile.addEventListener("change", (event) => {
-  importData(event.target.files[0]);
-});
-
-// Service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js').then(reg => {
-    try { reg.update(); } catch (e) {}
-  }).catch(() => {});
-}
-
-// Initialize app
-initDB().then(() => {
-  render();
-}).catch(err => {
-  alert("Chyba při inicializaci databáze: " + err);
-});
-</script>
-</body>
-</html>
+              function closeViewer() {
+                viewer.setAttribute('aria-hidden', 'true');
+                document.documentElement.style.overflow = '';
+                // remove handlers to avoid leaks
+                document.getElementById('viewer-close').onclick = null;
+                document.getElementById('viewer-backdrop').onclick = null;
+              }
+            }
