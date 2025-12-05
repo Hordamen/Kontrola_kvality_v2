@@ -52,6 +52,11 @@
     .btn-small:hover{background:#e8eaed}
     .btn-small.danger{background:var(--danger);color:#fff}
     .btn-small.danger:hover{background:#e64545}
+    .folders{margin-top:1.5rem;display:grid;gap:1rem;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr))}
+    .folder{background:#fff;padding:1rem;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.04);cursor:pointer;text-align:center;transition:box-shadow 0.2s}
+    .folder:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+    .folder-name{font-weight:600;font-size:1.1rem;color:var(--brand)}
+    .folder-count{font-size:0.9rem;color:var(--muted);margin-top:4px}
     footer{margin-top:2rem;padding-top:1rem;text-align:center;color:var(--muted);font-size:0.85rem;border-top:1px solid #e0e0e0}
     #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:9999}
     #viewer[aria-hidden="false"]{display:flex}
@@ -89,6 +94,8 @@
         <textarea id="crossNote" placeholder="Zadejte příčné měření..."></textarea>
         <label>Poznámka</label>
         <textarea id="noteField" placeholder="Doplňující poznámka..."></textarea>
+        <label>Složka</label>
+        <input id="folderName" placeholder="Název složky (nepovinné)..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: inherit; font-size: 0.95rem; margin-top: 6px;">
         <div class="form-actions">
           <button id="saveBtn" type="submit">Uložit záznam</button>
           <button id="show-map" type="button" style="background:var(--brand);color:#fff;">Zobrazit mapu záznamů</button>
@@ -100,7 +107,8 @@
         </div>
       </form>
 
-
+      <button id="backToFoldersBtn" type="button" class="btn-secondary" style="display: none; margin-top: 1rem;">Zpět na složky</button>
+      <section class="folders" id="folders"></section>
       <section class="entries" id="entries"></section>
 
       <!-- Map overlay -->
@@ -135,7 +143,7 @@
       <script>
       // Lightweight IndexedDB helpers
       const DB_NAME = 'fotoPoznamkyDB';
-      const DB_VERSION = 1;
+      const DB_VERSION = 2;
       const STORE_NAME = 'entries';
       let db;
 
@@ -147,6 +155,7 @@
             if(!idb.objectStoreNames.contains(STORE_NAME)){
               const store = idb.createObjectStore(STORE_NAME,{keyPath:'id'});
               store.createIndex('time','time',{unique:false});
+              store.createIndex('folder', 'folder', { unique: false });
             }
           };
           req.onsuccess = ()=>{ db = req.result; res(db); };
@@ -198,13 +207,13 @@
         return new Date(ts).toLocaleString('cs-CZ', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
       }
 
-      async function saveEntry(photoFile, longNote, crossNote, note){
+      async function saveEntry(photoFile, longNote, crossNote, note, folderName){
         const coords = await (async ()=>{
           if(!('geolocation' in navigator)) return null;
           return new Promise(res=> navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude.toFixed(6), lon:p.coords.longitude.toFixed(6)}), ()=>res(null), {enableHighAccuracy:true, timeout:8000}));
         })();
         const photoData = await fileToBase64(photoFile);
-        const entry = { id:Date.now().toString(), time:Date.now(), timeText:formatDate(Date.now()), coords, longNote, crossNote, note, photo:photoData };
+        const entry = { id:Date.now().toString(), time:Date.now(), timeText:formatDate(Date.now()), coords, longNote, crossNote, note, photo:photoData, folder:folderName };
         await addEntry(entry); return entry;
       }
 
@@ -212,21 +221,69 @@
 
       function downloadPhoto(dataURL, id){ if(!dataURL){ alert('Fotografie není dostupná pro stažení.'); return; } const a=document.createElement('a'); a.href=dataURL; a.download=`fotopoznamka_${id}.png`; document.body.appendChild(a); a.click(); a.remove(); }
 
+      async function renderFoldersAndEntries(folderToShow = null) {
+        const allEntries = await getAllEntries();
+        const foldersEl = document.getElementById('folders');
+        const entriesEl = document.getElementById('entries');
+        const statusEl = document.getElementById('status');
+        const backBtn = document.getElementById('backToFoldersBtn');
+
+        foldersEl.innerHTML = '';
+        entriesEl.innerHTML = '';
+
+        if (folderToShow === null) {
+            // FOLDERS VIEW
+            backBtn.style.display = 'none';
+            const folders = allEntries.reduce((acc, entry) => {
+                const folderName = entry.folder || 'Bez složky';
+                if (!acc[folderName]) {
+                    acc[folderName] = 0;
+                }
+                acc[folderName]++;
+                return acc;
+            }, {});
+
+            Object.keys(folders).sort().forEach(folderName => {
+                const div = document.createElement('div');
+                div.className = 'folder';
+                div.dataset.folder = folderName;
+                div.innerHTML = `
+                    <div class="folder-name">${escapeHtml(folderName)}</div>
+                    <div class="folder-count">${folders[folderName]} ${folders[folderName] === 1 ? 'záznam' : 'záznamy'}</div>
+                `;
+                div.addEventListener('click', () => renderFoldersAndEntries(folderName));
+                foldersEl.appendChild(div);
+            });
+            statusEl.textContent = `${Object.keys(folders).length} ${Object.keys(folders).length === 1 ? 'složka' : 'složky'}`;
+            document.getElementById('noteForm').style.display = '';
+
+        } else {
+            // ENTRIES VIEW
+            backBtn.style.display = 'block';
+            foldersEl.innerHTML = `<h2>Složka: ${escapeHtml(folderToShow)}</h2>`;
+            const entriesInFolder = allEntries.filter(e => (e.folder || 'Bez složky') === folderToShow);
+
+            entriesInFolder.forEach(e => {
+                const div = document.createElement('div');
+                div.className = 'entry';
+                const coordsText = e.coords ? `${e.coords.lat}, ${e.coords.lon}` : 'bez polohy';
+                let notesHtml = '';
+                if (e.longNote) notesHtml += `<p><strong>📏 Podélné měření:</strong> ${escapeHtml(e.longNote)}</p>`;
+                if (e.crossNote) notesHtml += `<p><strong>↔️ Příčné měření:</strong> ${escapeHtml(e.crossNote)}</p>`;
+                if (e.note) notesHtml += `<p><strong>📝 Poznámka:</strong> ${escapeHtml(e.note)}</p>`;
+                div.innerHTML = `<div class="entry-content"><img class="thumb" src="${e.photo}" alt="foto"><div class="meta"><div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>${notesHtml}<div class="actions"><button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button><button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button><button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button></div></div></div>`;
+                div.querySelector('.view-btn').addEventListener('click', () => viewFull(e.id));
+                div.querySelector('.delete-btn').addEventListener('click', async () => { if (confirm('Opravdu smazat tento záznam?')) { await deleteEntryById(e.id); await renderFoldersAndEntries(folderToShow); } });
+                div.querySelector('.download-btn').addEventListener('click', () => downloadPhoto(e.photo, e.id));
+                entriesEl.appendChild(div);
+            });
+            statusEl.textContent = `${entriesInFolder.length} ${entriesInFolder.length === 1 ? 'záznam' : 'záznamy'}`;
+            document.getElementById('noteForm').style.display = 'none';
+        }
+    }
+      
       async function render(){
-        const data = await getAllEntries(); const entriesEl = document.getElementById('entries'); const statusEl = document.getElementById('status'); entriesEl.innerHTML='';
-        data.forEach(e=>{
-          const div=document.createElement('div'); div.className='entry'; const coordsText = e.coords?`${e.coords.lat}, ${e.coords.lon}`:'bez polohy';
-          let notesHtml = '';
-          if(e.longNote) notesHtml += `<p><strong>📏 Podélné měření:</strong> ${escapeHtml(e.longNote)}</p>`;
-          if(e.crossNote) notesHtml += `<p><strong>↔️ Příčné měření:</strong> ${escapeHtml(e.crossNote)}</p>`;
-          if(e.note) notesHtml += `<p><strong>📝 Poznámka:</strong> ${escapeHtml(e.note)}</p>`;
-          div.innerHTML = `<div class="entry-content"><img class="thumb" src="${e.photo}" alt="foto"><div class="meta"><div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>${notesHtml}<div class="actions"><button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button><button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button><button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button></div></div></div>`;
-          div.querySelector('.view-btn').addEventListener('click', ()=> viewFull(e.id));
-          div.querySelector('.delete-btn').addEventListener('click', async ()=>{ if(confirm('Opravdu smazat tento záznam?')){ await deleteEntryById(e.id); await render(); }});
-          div.querySelector('.download-btn').addEventListener('click', ()=> downloadPhoto(e.photo, e.id));
-          entriesEl.appendChild(div);
-        });
-        statusEl.textContent = data.length? `${data.length} ${data.length===1?'záznam': data.length<5?'záznamy':'záznamů'}` : 'žádné záznamy';
+        await renderFoldersAndEntries();
       }
 
       async function viewFull(id){
@@ -268,7 +325,11 @@
 
       // wire up form and registration
       document.addEventListener('DOMContentLoaded', async ()=>{
-        await initDB(); await render();
+        await initDB(); 
+        await renderFoldersAndEntries();
+        
+        document.getElementById('backToFoldersBtn').addEventListener('click', () => renderFoldersAndEntries());
+
         const mapOverlay = document.getElementById('map-overlay');
         const mapCloseBtn = document.getElementById('map-close');
         let mapInstance = null;
@@ -321,12 +382,28 @@
           document.documentElement.style.overflow='';
         };
         const form = document.getElementById('noteForm');
-        form.addEventListener('submit', async (e)=>{ e.preventDefault(); const fileInput=document.getElementById('photo'); if(!fileInput.files || fileInput.files.length===0){ alert('Vyberte fotografii.'); return; } const longNote=document.getElementById('longNote').value.trim(); const crossNote=document.getElementById('crossNote').value.trim(); const note=document.getElementById('noteField').value.trim(); await saveEntry(fileInput.files[0], longNote, crossNote, note); fileInput.value=''; document.getElementById('longNote').value=''; document.getElementById('crossNote').value=''; document.getElementById('noteField').value=''; await render(); alert('Záznam uložen.'); });
+        form.addEventListener('submit', async (e)=>{ 
+            e.preventDefault(); 
+            const fileInput=document.getElementById('photo'); 
+            if(!fileInput.files || fileInput.files.length===0){ alert('Vyberte fotografii.'); return; } 
+            const longNote=document.getElementById('longNote').value.trim(); 
+            const crossNote=document.getElementById('crossNote').value.trim(); 
+            const note=document.getElementById('noteField').value.trim(); 
+            const folderName = document.getElementById('folderName').value.trim();
+            await saveEntry(fileInput.files[0], longNote, crossNote, note, folderName); 
+            fileInput.value=''; 
+            document.getElementById('longNote').value=''; 
+            document.getElementById('crossNote').value=''; 
+            document.getElementById('noteField').value=''; 
+            document.getElementById('folderName').value='';
+            await renderFoldersAndEntries(); 
+            alert('Záznam uložen.'); 
+        });
 
-        document.getElementById('clearAll').addEventListener('click', async ()=>{ if(confirm('Opravdu vymazat všechna data?')){ const tx=db.transaction([STORE_NAME],'readwrite'); tx.objectStore(STORE_NAME).clear(); tx.oncomplete = async ()=>{ await render(); }; }});
+        document.getElementById('clearAll').addEventListener('click', async ()=>{ if(confirm('Opravdu vymazat všechna data?')){ const tx=db.transaction([STORE_NAME],'readwrite'); tx.objectStore(STORE_NAME).clear(); tx.oncomplete = async ()=>{ await renderFoldersAndEntries(); }; }});
         document.getElementById('exportBtn').addEventListener('click', async ()=>{ const data = await getAllEntries(); const dateStr = new Date().toISOString().split('T')[0]; const a=document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})); a.download=`kontrolakvality_${dateStr}.json`; document.body.appendChild(a); a.click(); a.remove(); });
         document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
-        document.getElementById('importFile').addEventListener('change', async (ev)=>{ const f=ev.target.files[0]; if(!f) return; const txt = await f.text(); try{ const arr = JSON.parse(txt); for(const it of arr){ try{ await addEntry(it); }catch(e){} } await render(); alert('Import dokončen.'); }catch(err){ alert('Chyba importu: '+err.message); } });
+        document.getElementById('importFile').addEventListener('change', async (ev)=>{ const f=ev.target.files[0]; if(!f) return; const txt = await f.text(); try{ const arr = JSON.parse(txt); for(const it of arr){ try{ await addEntry(it); }catch(e){} } await renderFoldersAndEntries(); alert('Import dokončen.'); }catch(err){ alert('Chyba importu: '+err.message); } });
 
         // service worker registration + update handling (prompt user)
         if('serviceWorker' in navigator){
