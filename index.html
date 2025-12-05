@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
   <title>Foto poznámky – Kontrola kvality</title>
-  <link rel="manifest" href="manifest.json?v=2.1">
+  <link rel="manifest" href="manifest.json?v=2.2">
   <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
   <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
@@ -13,6 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KvalitaFoto">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root{--brand:#1976d2;--muted:#666;--danger:#ff5252}
     *{box-sizing:border-box}
@@ -98,6 +99,17 @@
       </form>
 
       <section class="entries" id="entries"></section>
+
+      <button id="show-map" style="margin:18px 0 0 0;padding:10px 18px;border-radius:8px;background:var(--brand);color:#fff;font-size:1rem;border:none;cursor:pointer;">Zobrazit mapu záznamů</button>
+
+      <!-- Map overlay -->
+      <div id="map-overlay" aria-hidden="true" style="position:fixed;inset:0;display:none;z-index:99999;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div id="map-content" style="background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4);padding:16px;max-width:1100px;width:95vw;max-height:95vh;display:flex;flex-direction:column;">
+          <button id="map-close" aria-label="Zavřít" style="align-self:flex-end;background:transparent;border:none;font-size:22px;cursor:pointer;margin-bottom:8px;">✕</button>
+          <h2 style="margin-top:0">Mapa záznamů</h2>
+          <div id="map" style="width:100%;height:70vh;border-radius:8px;"></div>
+        </div>
+      </div>
 
       <div id="viewer" aria-hidden="true">
         <div id="viewer-backdrop"></div>
@@ -253,6 +265,49 @@
       // wire up form and registration
       document.addEventListener('DOMContentLoaded', async ()=>{
         await initDB(); await render();
+        // Map logic
+        const leafletScript = document.createElement('script');
+        leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        document.head.appendChild(leafletScript);
+        const showMapBtn = document.getElementById('show-map');
+        const mapOverlay = document.getElementById('map-overlay');
+        const mapCloseBtn = document.getElementById('map-close');
+        let mapInstance = null;
+
+        showMapBtn.addEventListener('click', async ()=>{
+          mapOverlay.setAttribute('aria-hidden','false');
+          document.documentElement.style.overflow='hidden';
+          // Wait for Leaflet to load
+          if(typeof L === 'undefined') {
+            await new Promise(res => { leafletScript.onload = res; });
+          }
+          // Get all entries with coords
+          const entries = await getAllEntries();
+          const points = entries.filter(e=>e.coords && e.coords.lat && e.coords.lon);
+          // Init map only once
+          if(!mapInstance){
+            mapInstance = L.map('map').setView([49.8, 15.5], 7); // CZ center
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+              maxZoom: 18,
+            }).addTo(mapInstance);
+          }
+          // Remove old markers
+          mapInstance.eachLayer(layer => { if(layer instanceof L.Marker) mapInstance.removeLayer(layer); });
+          // Add markers
+          points.forEach(e=>{
+            const marker = L.marker([parseFloat(e.coords.lat), parseFloat(e.coords.lon)]).addTo(mapInstance);
+            marker.bindPopup(`<strong>${e.timeText}</strong><br>${e.longNote||''}<br>${e.crossNote||''}<br>${e.note||''}`);
+          });
+          if(points.length){
+            const bounds = L.latLngBounds(points.map(e=>[parseFloat(e.coords.lat), parseFloat(e.coords.lon)]));
+            mapInstance.fitBounds(bounds.pad(0.15));
+          }
+        });
+        mapCloseBtn.onclick = ()=>{
+          mapOverlay.setAttribute('aria-hidden','true');
+          document.documentElement.style.overflow='';
+        };
         const form = document.getElementById('noteForm');
         form.addEventListener('submit', async (e)=>{ e.preventDefault(); const fileInput=document.getElementById('photo'); if(!fileInput.files || fileInput.files.length===0){ alert('Vyberte fotografii.'); return; } const longNote=document.getElementById('longNote').value.trim(); const crossNote=document.getElementById('crossNote').value.trim(); const note=document.getElementById('noteField').value.trim(); await saveEntry(fileInput.files[0], longNote, crossNote, note); fileInput.value=''; document.getElementById('longNote').value=''; document.getElementById('crossNote').value=''; document.getElementById('noteField').value=''; await render(); alert('Záznam uložen.'); });
 
