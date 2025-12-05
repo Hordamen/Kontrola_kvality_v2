@@ -1,8 +1,8 @@
-const CACHE_NAME = 'foto-poznamky-cache-v2.2.3';
+const CACHE_NAME = 'foto-poznamky-cache-v2.2.4';
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json?v=2.2.3',
+  './manifest.json?v=2.2.4',
   './icon192.png',
   './icon512.png'
 ];

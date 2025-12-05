@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
   <title>Foto poznámky – Kontrola kvality</title>
-  <link rel="manifest" href="manifest.json?v=2.2.3">
+  <link rel="manifest" href="manifest.json?v=2.2.4">
   <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
   <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
@@ -91,10 +91,10 @@
         <textarea id="noteField" placeholder="Doplňující poznámka..."></textarea>
         <div class="form-actions">
           <button id="saveBtn" type="submit">Uložit záznam</button>
+          <button id="show-map" type="button" style="background:var(--brand);color:#fff;">Zobrazit mapu záznamů</button>
           <button id="clearAll" type="button" class="btn-secondary">Vymazat vše</button>
           <button id="exportBtn" type="button" class="btn-secondary">Exportovat data</button>
           <button id="importBtn" type="button" class="btn-secondary">Importovat data</button>
-          <button id="show-map" type="button" class="btn-secondary">Zobrazit mapu záznamů</button>
           <div id="status"></div>
           <input type="file" id="importFile" accept=".json" style="display: none;">
         </div>
@@ -129,7 +129,7 @@
 
       <footer>
         Aplikace funguje offline. Data jsou uložena lokálně v zařízení (IndexedDB).<br>
-        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.3</span>
+        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.4</span>
       </footer>
 
       <script>
@@ -278,29 +278,38 @@
           const showMapBtn = document.getElementById('show-map');
           if(showMapBtn){
             showMapBtn.addEventListener('click', async ()=>{
-              mapOverlay.setAttribute('aria-hidden','false');
-              document.documentElement.style.overflow='hidden';
-              // Get all entries with coords
-              const entries = await getAllEntries();
-              const points = entries.filter(e=>e.coords && e.coords.lat && e.coords.lon);
-              // Init map only once
-              if(!mapInstance){
-                mapInstance = L.map('map').setView([49.8, 15.5], 7); // CZ center
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                  attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-                  maxZoom: 18,
-                }).addTo(mapInstance);
-              }
-              // Remove old markers
-              mapInstance.eachLayer(layer => { if(layer instanceof L.Marker) mapInstance.removeLayer(layer); });
-              // Add markers
-              points.forEach(e=>{
-                const marker = L.marker([parseFloat(e.coords.lat), parseFloat(e.coords.lon)]).addTo(mapInstance);
-                marker.bindPopup(`<strong>${e.timeText}</strong><br>${e.longNote||''}<br>${e.crossNote||''}<br>${e.note||''}`);
-              });
-              if(points.length){
-                const bounds = L.latLngBounds(points.map(e=>[parseFloat(e.coords.lat), parseFloat(e.coords.lon)]));
-                mapInstance.fitBounds(bounds.pad(0.15));
+              try{
+                mapOverlay.setAttribute('aria-hidden','false');
+                document.documentElement.style.overflow='hidden';
+                // Wait a moment for DOM to render
+                await new Promise(r => setTimeout(r, 100));
+                // Get all entries with coords
+                const entries = await getAllEntries();
+                const points = entries.filter(e=>e.coords && e.coords.lat && e.coords.lon);
+                // Init map only once
+                if(!mapInstance){
+                  mapInstance = L.map('map').setView([49.8, 15.5], 7);
+                  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+                    maxZoom: 18,
+                  }).addTo(mapInstance);
+                }
+                // Invalidate size after showing
+                mapInstance.invalidateSize();
+                // Remove old markers
+                mapInstance.eachLayer(layer => { if(layer instanceof L.Marker) mapInstance.removeLayer(layer); });
+                // Add markers
+                points.forEach(e=>{
+                  const marker = L.marker([parseFloat(e.coords.lat), parseFloat(e.coords.lon)]).addTo(mapInstance);
+                  marker.bindPopup(`<strong>${e.timeText}</strong><br>${e.longNote||''}<br>${e.crossNote||''}<br>${e.note||''}`);
+                });
+                if(points.length){
+                  const bounds = L.latLngBounds(points.map(e=>[parseFloat(e.coords.lat), parseFloat(e.coords.lon)]));
+                  mapInstance.fitBounds(bounds.pad(0.15));
+                }
+              }catch(err){
+                console.error('Chyba mapy:', err);
+                alert('Chyba při otevírání mapy: '+err.message);
               }
             });
           }
