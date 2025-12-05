@@ -280,6 +280,7 @@
             showMapBtn.addEventListener('click', async ()=>{
               try{
                 mapOverlay.setAttribute('aria-hidden','false');
+                mapOverlay.style.display = 'flex';
                 document.documentElement.style.overflow='hidden';
                 // Wait a moment for DOM to render
                 await new Promise(r => setTimeout(r, 100));
@@ -316,6 +317,7 @@
         }, 100);
         mapCloseBtn.onclick = ()=>{
           mapOverlay.setAttribute('aria-hidden','true');
+          mapOverlay.style.display = 'none';
           document.documentElement.style.overflow='';
         };
         const form = document.getElementById('noteForm');
