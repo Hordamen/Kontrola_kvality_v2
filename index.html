@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
   <title>Foto poznámky – Kontrola kvality</title>
-  <link rel="manifest" href="manifest.json?v=2.2.8">
+  <link rel="manifest" href="manifest.json?v=2.2.7">
   <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
   <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
@@ -141,7 +141,7 @@
 
       <footer>
         Aplikace funguje offline. Data jsou uložena lokálně v zařízení (IndexedDB).<br>
-        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.8</span>
+        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.7</span>
       </footer>
 
       <script>
@@ -258,6 +258,7 @@
             }, {});
 
             Object.keys(folders).sort().forEach(folderName => {
+                if (folderName === 'Bez složky') return; // Do not show 'Bez složky' as a folder to be renamed
                 const div = document.createElement('div');
                 div.className = 'folder';
                 
@@ -278,7 +279,7 @@
                     e.stopPropagation();
                     const newFolderName = prompt('Zadejte nový název složky:', folderName);
                     if (newFolderName && newFolderName.trim() && newFolderName.trim() !== folderName) {
-                        const entriesToUpdate = allEntries.filter(entry => (entry.folder || 'Bez složky') === folderName);
+                        const entriesToUpdate = allEntries.filter(entry => entry.folder === folderName);
                         for (const entry of entriesToUpdate) {
                             entry.folder = newFolderName.trim();
                             await updateEntry(entry);
@@ -292,6 +293,18 @@
                 div.appendChild(renameBtn);
                 foldersEl.appendChild(div);
             });
+            // Show entries without a folder
+            if (folders['Bez složky']) {
+                const div = document.createElement('div');
+                div.className = 'folder';
+                div.dataset.folder = 'Bez složky';
+                div.innerHTML = `
+                    <div class="folder-name">Bez složky</div>
+                    <div class="folder-count">${folders['Bez složky']} ${folders['Bez složky'] === 1 ? 'záznam' : 'záznamy'}</div>
+                `;
+                div.addEventListener('click', () => renderFoldersAndEntries('Bez složky'));
+                foldersEl.appendChild(div);
+            }
             statusEl.textContent = `${Object.keys(folders).length} ${Object.keys(folders).length === 1 ? 'složka' : 'složky'}`;
             document.getElementById('noteForm').style.display = '';
 
@@ -435,6 +448,7 @@
                 if(!mapInstance){
                   mapInstance = L.map('map').setView([49.8, 15.5], 7);
                   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  
                     attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
                     maxZoom: 18,
                   }).addTo(mapInstance);
