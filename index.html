@@ -258,7 +258,6 @@
             }, {});
 
             Object.keys(folders).sort().forEach(folderName => {
-                if (folderName === 'Bez složky') return; // Do not show 'Bez složky' as a folder to be renamed
                 const div = document.createElement('div');
                 div.className = 'folder';
                 
@@ -279,7 +278,7 @@
                     e.stopPropagation();
                     const newFolderName = prompt('Zadejte nový název složky:', folderName);
                     if (newFolderName && newFolderName.trim() && newFolderName.trim() !== folderName) {
-                        const entriesToUpdate = allEntries.filter(entry => entry.folder === folderName);
+                        const entriesToUpdate = allEntries.filter(entry => (entry.folder || 'Bez složky') === folderName);
                         for (const entry of entriesToUpdate) {
                             entry.folder = newFolderName.trim();
                             await updateEntry(entry);
@@ -293,18 +292,6 @@
                 div.appendChild(renameBtn);
                 foldersEl.appendChild(div);
             });
-            // Show entries without a folder
-            if (folders['Bez složky']) {
-                const div = document.createElement('div');
-                div.className = 'folder';
-                div.dataset.folder = 'Bez složky';
-                div.innerHTML = `
-                    <div class="folder-name">Bez složky</div>
-                    <div class="folder-count">${folders['Bez složky']} ${folders['Bez složky'] === 1 ? 'záznam' : 'záznamy'}</div>
-                `;
-                div.addEventListener('click', () => renderFoldersAndEntries('Bez složky'));
-                foldersEl.appendChild(div);
-            }
             statusEl.textContent = `${Object.keys(folders).length} ${Object.keys(folders).length === 1 ? 'složka' : 'složky'}`;
             document.getElementById('noteForm').style.display = '';
 
