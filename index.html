@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
   <title>Foto poznámky – Kontrola kvality</title>
-  <link rel="manifest" href="manifest.json?v=2.2.6">
+  <link rel="manifest" href="manifest.json?v=2.2.7">
   <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
   <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
@@ -125,6 +125,10 @@
         <div id="viewer-content" role="dialog" aria-modal="true">
           <button id="viewer-close" aria-label="Zavřít">✕</button>
           <div id="viewer-body"></div>
+          <div id="edit-map-container" style="display:none; margin-top: 1rem;">
+            <div id="edit-map" style="height: 400px; width: 100%;"></div>
+            <button id="save-coords-btn" class="btn-small" style="margin-top: 8px;">Uložit souřadnice</button>
+          </div>
         </div>
       </div>
 
@@ -137,7 +141,7 @@
 
       <footer>
         Aplikace funguje offline. Data jsou uložena lokálně v zařízení (IndexedDB).<br>
-        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.6</span>
+        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.7</span>
       </footer>
 
       <script>
@@ -170,6 +174,16 @@
           const r = store.add(entry);
           r.onsuccess = ()=> res(entry);
           r.onerror = ()=> rej(r.error);
+        });
+      }
+
+      function updateEntry(entry) {
+        return new Promise((res, rej) => {
+          const tx = db.transaction([STORE_NAME], 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          const r = store.put(entry);
+          r.onsuccess = () => res(entry);
+          r.onerror = () => rej(r.error);
         });
       }
 
@@ -244,16 +258,53 @@
             }, {});
 
             Object.keys(folders).sort().forEach(folderName => {
+                if (folderName === 'Bez složky') return; // Do not show 'Bez složky' as a folder to be renamed
                 const div = document.createElement('div');
                 div.className = 'folder';
-                div.dataset.folder = folderName;
-                div.innerHTML = `
-                    <div class="folder-name">${escapeHtml(folderName)}</div>
-                    <div class="folder-count">${folders[folderName]} ${folders[folderName] === 1 ? 'záznam' : 'záznamy'}</div>
-                `;
-                div.addEventListener('click', () => renderFoldersAndEntries(folderName));
+                
+                const folderNameEl = document.createElement('div');
+                folderNameEl.className = 'folder-name';
+                folderNameEl.textContent = escapeHtml(folderName);
+                folderNameEl.addEventListener('click', () => renderFoldersAndEntries(folderName));
+
+                const folderCountEl = document.createElement('div');
+                folderCountEl.className = 'folder-count';
+                folderCountEl.textContent = `${folders[folderName]} ${folders[folderName] === 1 ? 'záznam' : 'záznamy'}`;
+
+                const renameBtn = document.createElement('button');
+                renameBtn.className = 'btn-small';
+                renameBtn.textContent = 'Přejmenovat';
+                renameBtn.style.marginTop = '8px';
+                renameBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const newFolderName = prompt('Zadejte nový název složky:', folderName);
+                    if (newFolderName && newFolderName.trim() && newFolderName.trim() !== folderName) {
+                        const entriesToUpdate = allEntries.filter(entry => entry.folder === folderName);
+                        for (const entry of entriesToUpdate) {
+                            entry.folder = newFolderName.trim();
+                            await updateEntry(entry);
+                        }
+                        await renderFoldersAndEntries();
+                    }
+                };
+                
+                div.appendChild(folderNameEl);
+                div.appendChild(folderCountEl);
+                div.appendChild(renameBtn);
                 foldersEl.appendChild(div);
             });
+            // Show entries without a folder
+            if (folders['Bez složky']) {
+                const div = document.createElement('div');
+                div.className = 'folder';
+                div.dataset.folder = 'Bez složky';
+                div.innerHTML = `
+                    <div class="folder-name">Bez složky</div>
+                    <div class="folder-count">${folders['Bez složky']} ${folders['Bez složky'] === 1 ? 'záznam' : 'záznamy'}</div>
+                `;
+                div.addEventListener('click', () => renderFoldersAndEntries('Bez složky'));
+                foldersEl.appendChild(div);
+            }
             statusEl.textContent = `${Object.keys(folders).length} ${Object.keys(folders).length === 1 ? 'složka' : 'složky'}`;
             document.getElementById('noteForm').style.display = '';
 
@@ -291,22 +342,67 @@
         const viewer=document.getElementById('viewer'); const body=document.getElementById('viewer-body'); const coordsText = entry.coords?`${entry.coords.lat}, ${entry.coords.lon}`:'bez polohy';
         body.innerHTML = `
           <h1>Záznam z kontroly kvality</h1>
-          <div class="meta"><strong>📅 Čas:</strong> ${entry.timeText} &nbsp; <strong>📍 Poloha:</strong> ${coordsText}</div>
+          <div class="meta"><strong>📅 Čas:</strong> ${entry.timeText} &nbsp; <strong>📍 Poloha:</strong> <span id="coords-display">${coordsText}</span></div>
           <img src="${entry.photo}" alt="Fotografie záznamu">
           ${entry.longNote?`<div class="field"><strong>📏 Podélné měření</strong><div class="field-value">${escapeHtml(entry.longNote)}</div></div>`:''}
           ${entry.crossNote?`<div class="field"><strong>↔️ Příčné měření</strong><div class="field-value">${escapeHtml(entry.crossNote)}</div></div>`:''}
           ${entry.note?`<div class="field"><strong>📝 Poznámka</strong><div class="field-value">${escapeHtml(entry.note)}</div></div>`:''}
           <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
             <button id="viewer-download" class="btn-small">Stáhnout foto</button>
+            <button id="edit-coords-btn" class="btn-small">Upravit souřadnice</button>
             <button id="viewer-delete" class="btn-small danger">Smazat záznam</button>
           </div>
           <footer>Kontrola kvality – Foto poznámky | ${new Date().toLocaleDateString('cs-CZ')}</footer>
         `;
         viewer.setAttribute('aria-hidden','false'); viewer.style.display='flex'; document.documentElement.style.overflow='hidden';
-        document.getElementById('viewer-close').onclick = closeViewer; document.getElementById('viewer-backdrop').onclick = closeViewer;
+        
+        const editMapContainer = document.getElementById('edit-map-container');
+        const saveCoordsBtn = document.getElementById('save-coords-btn');
+        let editMap;
+        let marker;
+
+        document.getElementById('edit-coords-btn').onclick = () => {
+            editMapContainer.style.display = 'block';
+            if (!editMap) {
+                editMap = L.map('edit-map').setView(entry.coords ? [entry.coords.lat, entry.coords.lon] : [49.8, 15.5], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(editMap);
+            }
+            if (marker) {
+                editMap.removeLayer(marker);
+            }
+            if (entry.coords) {
+                marker = L.marker([entry.coords.lat, entry.coords.lon], { draggable: true }).addTo(editMap);
+                editMap.setView([entry.coords.lat, entry.coords.lon], 16);
+            } else {
+                marker = L.marker(editMap.getCenter(), { draggable: true }).addTo(editMap);
+                 editMap.setView([49.8, 15.5], 7);
+            }
+        };
+
+        saveCoordsBtn.onclick = async () => {
+            const newCoords = marker.getLatLng();
+            entry.coords = { lat: newCoords.lat.toFixed(6), lon: newCoords.lng.toFixed(6) };
+            await updateEntry(entry);
+            document.getElementById('coords-display').textContent = `${entry.coords.lat}, ${entry.coords.lon}`;
+            editMapContainer.style.display = 'none';
+            alert('Souřadnice aktualizovány.');
+        };
+
+        const closeViewer = () => {
+            viewer.setAttribute('aria-hidden','true');
+            viewer.style.display='none';
+            document.documentElement.style.overflow='';
+            editMapContainer.style.display = 'none';
+            if (editMap) {
+                editMap.remove();
+                editMap = null;
+            }
+        };
+
+        document.getElementById('viewer-close').onclick = closeViewer; 
+        document.getElementById('viewer-backdrop').onclick = closeViewer;
         document.getElementById('viewer-download').onclick = ()=> downloadPhoto(entry.photo, entry.id);
-        document.getElementById('viewer-delete').onclick = async ()=>{ if(confirm('Opravdu smazat tento záznam?')){ await deleteEntryById(entry.id); closeViewer(); await render(); }};
-        function closeViewer(){ viewer.setAttribute('aria-hidden','true'); viewer.style.display='none'; document.documentElement.style.overflow=''; document.getElementById('viewer-close').onclick=null; document.getElementById('viewer-backdrop').onclick=null; }
+        document.getElementById('viewer-delete').onclick = async ()=>{ if(confirm('Opravdu smazat tento záznam?')){ await deleteEntryById(entry.id); closeViewer(); await renderFoldersAndEntries(); }};
       }
 
       // Update-banner helpers
