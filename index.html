@@ -270,10 +270,15 @@
                 folderCountEl.className = 'folder-count';
                 folderCountEl.textContent = `${folders[folderName]} ${folders[folderName] === 1 ? 'záznam' : 'záznamy'}`;
 
+                const actionsDiv = document.createElement('div');
+                actionsDiv.style.marginTop = '8px';
+                actionsDiv.style.display = 'flex';
+                actionsDiv.style.gap = '8px';
+                actionsDiv.style.justifyContent = 'center';
+
                 const renameBtn = document.createElement('button');
                 renameBtn.className = 'btn-small';
                 renameBtn.textContent = 'Přejmenovat';
-                renameBtn.style.marginTop = '8px';
                 renameBtn.onclick = async (e) => {
                     e.stopPropagation();
                     const newFolderName = prompt('Zadejte nový název složky:', folderName);
@@ -286,10 +291,29 @@
                         await renderFoldersAndEntries();
                     }
                 };
-                
+
+                const exportFolderBtn = document.createElement('button');
+                exportFolderBtn.className = 'btn-small';
+                exportFolderBtn.textContent = 'Exportovat';
+                exportFolderBtn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const entriesToExport = allEntries.filter(entry => (entry.folder || 'Bez složky') === folderName);
+                    const dateStr = new Date().toISOString().split('T')[0];
+                    const a = document.createElement('a');
+                    const sanitizedFolderName = folderName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    a.href = URL.createObjectURL(new Blob([JSON.stringify(entriesToExport, null, 2)], {type:'application/json'}));
+                    a.download = `složka_${sanitizedFolderName}_${dateStr}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                };
+
+                actionsDiv.appendChild(renameBtn);
+                actionsDiv.appendChild(exportFolderBtn);
+
                 div.appendChild(folderNameEl);
                 div.appendChild(folderCountEl);
-                div.appendChild(renameBtn);
+                div.appendChild(actionsDiv);
                 foldersEl.appendChild(div);
             });
             
