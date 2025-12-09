@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
   <title>Foto poznámky – Kontrola kvality</title>
-  <link rel="manifest" href="manifest.json?v=2.2.7">
+  <link rel="manifest" href="manifest.json?v=2.2.9">
   <link rel="apple-touch-icon" href="icon192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="icon512.png" sizes="512x512">
   <link rel="icon" href="icon192.png" type="image/png" sizes="192x192">
@@ -141,7 +141,7 @@
 
       <footer>
         Aplikace funguje offline. Data jsou uložena lokálně v zařízení (IndexedDB).<br>
-        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.7</span>
+        <span style="color:var(--muted);font-size:0.95em;">Verze aplikace: v2.2.9</span>
       </footer>
 
       <script>
@@ -310,10 +310,37 @@
                 if (e.longNote) notesHtml += `<p><strong>📏 Podélné měření:</strong> ${escapeHtml(e.longNote)}</p>`;
                 if (e.crossNote) notesHtml += `<p><strong>↔️ Příčné měření:</strong> ${escapeHtml(e.crossNote)}</p>`;
                 if (e.note) notesHtml += `<p><strong>📝 Poznámka:</strong> ${escapeHtml(e.note)}</p>`;
-                div.innerHTML = `<div class="entry-content"><img class="thumb" src="${e.photo}" alt="foto"><div class="meta"><div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>${notesHtml}<div class="actions"><button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button><button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button><button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button></div></div></div>`;
+                div.innerHTML = `<div class="entry-content"><img class="thumb" src="${e.photo}" alt="foto"><div class="meta"><div class="meta-header"><strong>${e.timeText}</strong><span class="meta-info">${coordsText}</span></div>${notesHtml}<div class="actions"><button class="btn-small view-btn" data-id="${e.id}">Zobrazit</button><button class="btn-small danger delete-btn" data-id="${e.id}">Smazat</button><button class="btn-small download-btn" data-id="${e.id}">Stáhnout foto</button><button class="btn-small move-btn" data-id="${e.id}">Přesunout</button></div></div></div>`;
                 div.querySelector('.view-btn').addEventListener('click', () => viewFull(e.id));
                 div.querySelector('.delete-btn').addEventListener('click', async () => { if (confirm('Opravdu smazat tento záznam?')) { await deleteEntryById(e.id); await renderFoldersAndEntries(folderToShow); } });
                 div.querySelector('.download-btn').addEventListener('click', () => downloadPhoto(e.photo, e.id));
+                div.querySelector('.move-btn').addEventListener('click', async () => {
+                    const allEntries = await getAllEntries();
+                    const entryToMove = allEntries.find(entry => entry.id === e.id);
+                    if (!entryToMove) {
+                        alert('Záznam nebyl nalezen.');
+                        return;
+                    }
+
+                    const existingFolders = [...new Set(allEntries.map(entry => entry.folder).filter(f => f && f.trim()))];
+                    const currentFolder = entryToMove.folder || 'Bez složky';
+
+                    const newFolderName = prompt(
+                        `Kam chcete záznam přesunout?\n\nAktuální složka: "${currentFolder}"\n\nZadejte název cílové složky. Můžete zadat existující nebo novou složku.\nExistující složky: ${existingFolders.join(', ')}`,
+                        currentFolder === 'Bez složky' ? '' : currentFolder
+                    );
+
+                    if (newFolderName !== null) {
+                        const targetFolder = newFolderName.trim();
+                        const sourceFolder = entryToMove.folder || '';
+                        if (targetFolder !== sourceFolder) {
+                             entryToMove.folder = targetFolder;
+                             await updateEntry(entryToMove);
+                             await renderFoldersAndEntries(folderToShow);
+                             alert('Záznam byl přesunut.');
+                        }
+                    }
+                });
                 entriesEl.appendChild(div);
             });
             statusEl.textContent = `${entriesInFolder.length} ${entriesInFolder.length === 1 ? 'záznam' : 'záznamy'}`;
